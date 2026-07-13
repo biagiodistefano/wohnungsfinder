@@ -1,0 +1,27 @@
+[project]
+name = "wohnung"
+version = "0.1.0"
+description = "Vienna apartment search assistant — a Claude Code skill with a Python fetching tool"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.27",
+]
+
+[project.scripts]
+wohnung = "wohnung.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["wohnung"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,20 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Personal / local-only — never committed
+criteria.toml
+reports/
+images/
+state/
+logs/
+*.pdf
+
+# Editors & tooling
+.claude/settings.local.json
+.playwright-mcp/
+.idea/
+.vscode/
+.DS_Store

@@ -1,0 +1,51 @@
+# Search profile for the Vienna apartment hunt. Human-editable.
+#
+# This is a TEMPLATE. The real profile lives in criteria.toml (gitignored — it's
+# personal). Run /setup in Claude Code for a guided interview that creates it,
+# or copy this file to criteria.toml and edit by hand.
+
+[report]
+# Language the ranked reports are written in ("en", "de", "it", ...). The Claude
+# skill writes the whole report in this language.
+language = "en"
+
+[budget]
+max_rent_kalt = 1500        # target cold rent (Nettomiete), EUR/month
+rent_hard_cap = 1650        # absolute cap; listings above this are dropped
+
+[size]
+min_size_m2 = 70
+min_rooms = 3               # Zimmer count (Austrian convention: living room counts)
+
+[districts]
+# Vienna districts (1–23) to include. Listings outside these are dropped.
+include = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 23]
+
+[musthave]
+# Hard-drop only when a listing EXPLICITLY lacks these; keep + flag when unknown.
+elevator = true
+outdoor = true              # balcony / terrace / loggia / garden
+
+[furnished]
+# Fully furnished / möbliert apartments are a SOFT penalty (set false if you want
+# a furnished flat, or don't care). Furnished status is judged from the DESCRIPTION
+# text only — never from photos: furniture in a photo is usually the current
+# tenant's. A fitted kitchen (Einbauküche) does NOT count as furnished.
+penalize_furnished = true
+
+[timing]
+# Move-in availability is a SOFT scoring bonus (never a hard filter). The skill
+# scores each listing's available-from date against these anchors: the ideal
+# move-in gets the peak score; dates giving between overlap_min_weeks and
+# overlap_max_months of overlap with the current lease are acceptable; anything
+# outside gets a mild penalty. Leave lease_ends empty ("") to skip timing scoring.
+lease_ends = "2026-10-15"
+overlap_min_weeks = 2
+overlap_max_months = 2
+ideal_move_in = "2026-09-15"
+
+[geocode]
+# OpenStreetMap Nominatim asks for contact info in the User-Agent of automated
+# requests (https://operations.osmfoundation.org/policies/nominatim/).
+# An email address or a URL to your fork. Leave "" for an anonymous UA.
+contact = ""
