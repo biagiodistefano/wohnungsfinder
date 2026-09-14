@@ -170,11 +170,40 @@ def main(argv=None):
     pdf = sub.add_parser("pdf", help="render a markdown report to PDF (gitignored)")
     pdf.add_argument("md", help="path to the report .md")
     pdf.add_argument("--out", help="output .pdf path (default: same name, .pdf)")
+    em = sub.add_parser(
+        "email", help="email a report (.md or .pdf) to the recipients in criteria.toml [email]"
+    )
+    em.add_argument(
+        "report", nargs="?",
+        help="path to the report .md (sibling .pdf attached if present) or .pdf",
+    )
+    em.add_argument("--to", action="append", help="override To recipient(s)")
+    em.add_argument("--cc", action="append", help="override Cc recipient(s)")
+    em.add_argument("--verify", action="store_true", help="only test SMTP login, don't send")
     args = p.parse_args(argv)
 
     if args.cmd == "pdf":
         out = make_pdf(args.md, args.out)
         print(f"wrote {out}")
+        return
+
+    if args.cmd == "email":
+        import tomllib
+
+        from wohnung import mailer
+
+        if args.verify:
+            print(mailer.verify_login())
+            return
+        cfg = tomllib.loads((ROOT / "criteria.toml").read_text(encoding="utf-8")).get("email", {})
+        to = args.to or cfg.get("to", [])
+        cc = args.cc or cfg.get("cc", [])
+        if not args.report:
+            raise SystemExit("provide a report path to send (or use --verify)")
+        if not to:
+            raise SystemExit("no recipients: set [email].to in criteria.toml or pass --to")
+        sent = mailer.send_report(args.report, to=to, cc=cc)
+        print(f"emailed {args.report} to {', '.join(sent)}")
         return
 
     if args.cmd == "search":

@@ -18,3 +18,8 @@ logs/
 .idea/
 .vscode/
 .DS_Store
+
+# SMTP credentials — never committed (template is .env.example)
+.env
+.env.*
+!.env.example
