@@ -25,7 +25,7 @@ _SOURCE_SPECS = [
 ]
 
 
-def build_sources(fetcher: Fetcher) -> list:
+def build_sources(fetcher: Fetcher, mode: str = "rent") -> list:
     """Instantiate each configured source. A source module that is missing or fails
     to import is skipped with a warning rather than aborting the run."""
     import importlib
@@ -34,7 +34,7 @@ def build_sources(fetcher: Fetcher) -> list:
     for module_name, class_name in _SOURCE_SPECS:
         try:
             mod = importlib.import_module(module_name)
-            sources.append(getattr(mod, class_name)(fetcher))
+            sources.append(getattr(mod, class_name)(fetcher, mode=mode))
         except Exception as e:  # noqa: BLE001
             print(f"  ! skipping {class_name}: {type(e).__name__}: {e}", file=sys.stderr)
     return sources
@@ -55,12 +55,13 @@ def run_search(root: Path = ROOT, max_pages: int = 3, download: bool = True) -> 
     geocoder = Geocoder(root / "state" / "geocode_cache.json", contact=c.geocode_contact)
     fetcher = Fetcher()
     new_listings, excluded, duplicates, source_errors = [], [], [], []
+    projects = []  # developer/Bauträger projects: ranges, no price; reported separately
     seen_fps: set[str] = set()  # fingerprints surfaced earlier in THIS run
 
     def _meta(l):  # fingerprint inputs, persisted so the dedup key survives/recomputes
         return {"district": l.district, "rooms": l.rooms, "size_m2": l.size_m2, "price": l.price}
 
-    for src in build_sources(fetcher):
+    for src in build_sources(fetcher, c.mode):
         try:
             found = src.search(max_pages=max_pages)
         except Exception as e:  # a source failing must not abort the whole run
@@ -74,6 +75,11 @@ def run_search(root: Path = ROOT, max_pages: int = 3, download: bool = True) -> 
             if not ok:
                 excluded.append({"id": l.id, "url": l.url, "reason": reason})
                 state.record(l.id, source=l.source, url=l.url, status="excluded")
+                continue
+            if l.is_project:
+                # No concrete unit to evaluate: skip detail fetch, photos, and dedup.
+                state.record(l.id, source=l.source, url=l.url, status="project")
+                projects.append(l)
                 continue
             try:
                 src.enrich(l)
@@ -122,6 +128,7 @@ def run_search(root: Path = ROOT, max_pages: int = 3, download: bool = True) -> 
     fetcher.close()
     out = {
         "new_listings": [l.to_json() for l in new_listings],
+        "projects": [l.to_json() for l in projects],
         "excluded": excluded,
         "duplicates": duplicates,
         "source_errors": source_errors,
@@ -218,6 +225,7 @@ def main(argv=None):
         out = run_search(max_pages=args.max_pages, download=not args.no_images)
         print(
             f"new: {len(out['new_listings'])}  "
+            f"projects: {len(out['projects'])}  "
             f"excluded: {len(out['excluded'])}  "
             f"duplicates: {len(out['duplicates'])}  "
             f"errors: {len(out['source_errors'])}  "

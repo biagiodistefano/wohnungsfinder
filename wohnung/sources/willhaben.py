@@ -8,6 +8,7 @@ of {treeAttributeElement:{label,code}, values:[{label,code}]}.
 
 from __future__ import annotations
 
+from wohnung.energy import sniff_energy
 from wohnung.models import Listing
 from wohnung.nextdata import extract_next_data
 
@@ -115,11 +116,21 @@ def parse_detail(html: str, base_id: str) -> Listing:
         ref = im.get("mainImageUrl") or im.get("referenceImageUrl") or im.get("selfLink")
         if ref:
             imgs.append(ref if ref.startswith("http") else IMG_BASE + ref)
+    # Energy certificate: attribute names are a best guess (rent fixtures carry none);
+    # the description-text sniff is the reliable fallback.
+    energy_class = str(a.get("HWB_CLASS") or a.get("ENERGY_CLASS") or "")[:1].upper()
+    hwb = _num(a.get("HWB_VALUE")) if a.get("HWB_VALUE") else None
+    if not energy_class or hwb is None:
+        cls2, hwb2 = sniff_energy(a.get("DESCRIPTION", ""))
+        energy_class = energy_class or cls2
+        hwb = hwb if hwb is not None else hwb2
     return Listing(
         id=base_id,
         source="willhaben",
         url=DETAIL_BASE,
         description=a.get("DESCRIPTION", ""),
+        energy_class=energy_class,
+        hwb=hwb,
         building_condition=a.get("BUILDING_CONDITION", "") or a.get("BUILDING_TYPE", ""),
         available_from=a.get("AVAILABLE_DATE", ""),
         floor=str(a.get("FLOOR", "")),
