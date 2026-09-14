@@ -107,3 +107,11 @@ def test_run_search_flags_sources_that_return_nothing(tmp_path, monkeypatch):
     assert out["new_listings"] == []
     assert [e["source"] for e in out["source_errors"]] == ["silent"]
     assert "0 listings" in out["source_errors"][0]["error"]
+
+
+def test_is_isobmff_detects_avif_container():
+    from wohnung.images import is_isobmff
+
+    assert is_isobmff(b"\x00\x00\x00\x1cftypavif" + b"\x00" * 20)
+    assert not is_isobmff(b"\xff\xd8\xff\xe0" + b"\x00" * 20)  # JPEG
+    assert not is_isobmff(b"")
