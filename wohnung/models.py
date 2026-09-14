@@ -15,16 +15,21 @@ class Listing:
     district: Optional[int] = None
     postcode: Optional[int] = None
     address: str = ""
-    rent: Optional[float] = None  # headline monthly rent (may be kalt or warm; flagged)
-    rent_kind: str = "unknown"  # "kalt" | "warm" | "unknown"
+    price: Optional[float] = None  # monthly rent (rent mode) or purchase price (buy mode)
+    price_kind: str = "unknown"  # "kalt" | "warm" | "kauf" | "unknown"
+    price_per_m2: Optional[float] = None  # computed in run_search when price and size exist
     size_m2: Optional[float] = None
     rooms: Optional[float] = None
     floor: str = ""
+    floor_number: Optional[int] = None  # parsed from `floor`; None = unknown / Dachgeschoss
     has_elevator: TRI = None
     outdoor: str = ""  # description of outdoor space, "" if none/unknown
     has_outdoor: TRI = None
     provisionsfrei: TRI = None
     building_condition: str = ""
+    energy_class: str = ""  # HWB class "A".."G", "" if unknown
+    hwb: Optional[float] = None  # kWh/m²a
+    is_project: bool = False  # developer/Bauträger project: price is a from-price, size may be None
     available_from: str = ""
     description: str = ""
     coordinates: Optional[tuple[float, float]] = None  # (lat, lng)

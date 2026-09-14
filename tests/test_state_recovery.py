@@ -11,7 +11,7 @@ from wohnung.state import State
 # --- fingerprint -----------------------------------------------------------
 
 def test_fingerprint_from_matches_listing():
-    l = Listing(id="x", source="s", url="u", district=3, rooms=3, size_m2=60.4, rent=1549)
+    l = Listing(id="x", source="s", url="u", district=3, rooms=3, size_m2=60.4, price=1549)
     assert fingerprint(l) == fingerprint_from(3, 3, 60.4, 1549) == "3|3|60|1550"
 
 
@@ -101,7 +101,7 @@ def test_reindex_rebuilds_state_from_reports(tmp_path):
         '<a href="https://www.willhaben.at/iad/immobilien/d/mietwohnungen/wien/wien-1050-margareten/helle-800890941/">y</a>'
     )
     (tmp_path / "reports" / ".last_run.json").write_text(json.dumps({
-        "new_listings": [{"id": "willhaben_800890941", "url": "u", "district": 5, "rooms": 3, "size_m2": 73, "rent": 1395}],
+        "new_listings": [{"id": "willhaben_800890941", "url": "u", "district": 5, "rooms": 3, "size_m2": 73, "price": 1395}],
         "excluded": [], "duplicates": [],
     }))
     r = reindex(tmp_path)
@@ -124,3 +124,10 @@ def test_reindex_is_non_destructive(tmp_path):
     reindex(tmp_path)
     # existing status preserved, not reset to "seen"
     assert State(tmp_path / "state" / "seen.json").get("willhaben_800890941")["status"] == "interested"
+
+
+def test_state_recomputes_fingerprint_from_legacy_rent_meta(tmp_path):
+    p = tmp_path / "seen.json"
+    State(p).record("a", source="s", url="u", meta={"district": 3, "rooms": 3, "size_m2": 60, "rent": 1549})
+    st = State(p)
+    assert st.has_fingerprint(fingerprint_from(3, 3, 60, 1549))

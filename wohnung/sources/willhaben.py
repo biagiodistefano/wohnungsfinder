@@ -70,7 +70,7 @@ def parse_search(html: str) -> list[Listing]:
                 postcode=postcode,
                 district=district,
                 address=a.get("ADDRESS", ""),
-                rent=_num(a.get("RENT/PER_MONTH_LETTINGS") or a.get("PRICE")),
+                price=_num(a.get("RENT/PER_MONTH_LETTINGS") or a.get("PRICE")),
                 size_m2=_num(a.get("ESTATE_SIZE/LIVING_AREA") or a.get("ESTATE_SIZE")),
                 rooms=_num(a.get("NUMBER_OF_ROOMS")),
                 floor=str(a.get("FLOOR", "")),

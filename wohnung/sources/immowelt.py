@@ -60,7 +60,7 @@ def parse_search(html: str) -> list[Listing]:
                 source="immowelt",
                 url=f"{BASE}/expose/{eid}",
                 title=title,
-                rent=_de_int(price.group(1)) if price else None,
+                price=_de_int(price.group(1)) if price else None,
                 rooms=_de_dec(rooms.group(1)) if rooms else None,
                 size_m2=_de_dec(size.group(1)) if size else None,
                 floor=floor.group(1) if floor else "",

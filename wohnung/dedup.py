@@ -33,4 +33,10 @@ def fingerprint_from(
 
 def fingerprint(l: Listing) -> Optional[str]:
     """A stable key for the underlying apartment, or None if we can't form one."""
-    return fingerprint_from(l.district, l.rooms, l.size_m2, l.rent)
+    return fingerprint_from(l.district, l.rooms, l.size_m2, l.price)
+
+
+def meta_price(meta: dict) -> Optional[float]:
+    """Price from a persisted meta dict; accepts the legacy 'rent' key."""
+    v = meta.get("price")
+    return v if v is not None else meta.get("rent")

@@ -58,7 +58,7 @@ def run_search(root: Path = ROOT, max_pages: int = 3, download: bool = True) -> 
     seen_fps: set[str] = set()  # fingerprints surfaced earlier in THIS run
 
     def _meta(l):  # fingerprint inputs, persisted so the dedup key survives/recomputes
-        return {"district": l.district, "rooms": l.rooms, "size_m2": l.size_m2, "rent": l.rent}
+        return {"district": l.district, "rooms": l.rooms, "size_m2": l.size_m2, "price": l.price}
 
     for src in build_sources(fetcher):
         try:

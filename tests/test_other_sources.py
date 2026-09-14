@@ -11,7 +11,7 @@ def test_immoscout_parses_real_listings():
     assert listings
     l = listings[0]
     assert l.id.startswith("immoscout_")
-    assert l.rent and l.rent > 0
+    assert l.price and l.price > 0
     assert l.size_m2 and l.size_m2 > 0
     assert l.district and 1 <= l.district <= 23
     assert l.url.startswith("https://www.immobilienscout24.at/expose/")
@@ -23,7 +23,7 @@ def test_derstandard_parses_real_cards():
     l = listings[0]
     assert l.id.startswith("derstandard_")
     assert l.title
-    assert l.rent and l.rent > 0
+    assert l.price and l.price > 0
     assert l.size_m2 and l.size_m2 > 0
     assert l.rooms and l.rooms > 0
     # district comes from enrich() (detail page), not the search cards

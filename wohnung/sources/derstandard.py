@@ -56,7 +56,7 @@ def parse_search(html: str) -> list[Listing]:
                 title=title,
                 postcode=postcode,
                 district=int(str(postcode)[1:3]) if postcode else None,
-                rent=float(price.replace(".", "")) if price else None,
+                price=float(price.replace(".", "")) if price else None,
                 size_m2=float(size.replace(",", ".")) if size else None,
                 rooms=float(rooms) if rooms else None,
                 has_outdoor=True if out else None,

@@ -81,7 +81,7 @@ def parse_search(html: str) -> list[Listing]:
                 address=hit.get("addressString", ""),
                 postcode=pc,
                 district=district,
-                rent=price,
+                price=price,
                 size_m2=area,
                 rooms=_to_float(hit.get("numberOfRooms")),
                 provisionsfrei=bool(hit.get("isPrivate")) if hit.get("isPrivate") is not None else None,

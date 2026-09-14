@@ -16,7 +16,7 @@ import re
 from pathlib import Path
 from typing import Optional
 
-from wohnung.dedup import fingerprint_from
+from wohnung.dedup import fingerprint_from, meta_price
 from wohnung.state import State
 
 _HREF = re.compile(r'href="([^"]+)"')
@@ -73,11 +73,11 @@ def _records_from_last_run(path: Path) -> dict[str, dict]:
                 continue
             meta = {
                 k: item.get(k)
-                for k in ("district", "rooms", "size_m2", "rent")
+                for k in ("district", "rooms", "size_m2", "price", "rent")
                 if item.get(k) is not None
             }
             fp = fingerprint_from(
-                meta.get("district"), meta.get("rooms"), meta.get("size_m2"), meta.get("rent")
+                meta.get("district"), meta.get("rooms"), meta.get("size_m2"), meta_price(meta)
             )
             recs[lid] = {"url": item.get("url", ""), "meta": meta or None, "fingerprint": fp}
     return recs

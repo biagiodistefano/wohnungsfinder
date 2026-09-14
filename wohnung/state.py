@@ -5,7 +5,7 @@ import os
 import shutil
 from pathlib import Path
 
-from wohnung.dedup import fingerprint_from
+from wohnung.dedup import fingerprint_from, meta_price
 
 
 class State:
@@ -67,7 +67,7 @@ class State:
                 m = v.get("meta")
                 if m:
                     fp = fingerprint_from(
-                        m.get("district"), m.get("rooms"), m.get("size_m2"), m.get("rent")
+                        m.get("district"), m.get("rooms"), m.get("size_m2"), meta_price(m)
                     )
             if fp:
                 fps.add(fp)

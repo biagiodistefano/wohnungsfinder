@@ -10,7 +10,7 @@ C = Criteria(1500, 1650, 60, 3, set(range(1, 20)) | {23}, True, True)
 
 
 def _listing(**kw):
-    d = dict(district=7, rent=1200, size_m2=70, rooms=3, has_elevator=True, has_outdoor=True)
+    d = dict(district=7, price=1200, size_m2=70, rooms=3, has_elevator=True, has_outdoor=True)
     d.update(kw)
     return Listing(id="x", source="s", url="u", **d)
 
@@ -18,7 +18,7 @@ def _listing(**kw):
 def test_hard_filter_keep_and_drops():
     assert hard_filter(_listing(), C)[0]
     assert not hard_filter(_listing(district=21), C)[0]
-    assert not hard_filter(_listing(rent=1700), C)[0]
+    assert not hard_filter(_listing(price=1700), C)[0]
     assert not hard_filter(_listing(size_m2=50), C)[0]
     assert not hard_filter(_listing(rooms=2), C)[0]
     assert not hard_filter(_listing(has_elevator=False), C)[0]
