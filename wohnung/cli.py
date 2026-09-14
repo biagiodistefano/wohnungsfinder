@@ -117,6 +117,7 @@ def run_search(root: Path = ROOT, max_pages: int = 3, download: bool = True) -> 
                     pass
             if l.coordinates:
                 l.nearest_ubahn, l.ubahn_distance_m = nearest_ubahn(*l.coordinates)
+            l.price_per_m2 = price_per_m2(l)
             if download:
                 download_images(l, fetcher, root / "images")
             state.record(
@@ -127,6 +128,7 @@ def run_search(root: Path = ROOT, max_pages: int = 3, download: bool = True) -> 
 
     fetcher.close()
     out = {
+        "mode": c.mode,
         "new_listings": [l.to_json() for l in new_listings],
         "projects": [l.to_json() for l in projects],
         "excluded": excluded,
@@ -141,6 +143,13 @@ def run_search(root: Path = ROOT, max_pages: int = 3, download: bool = True) -> 
         json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     return out
+
+
+def price_per_m2(l) -> float | None:
+    """Rounded price per m² (rent/month or purchase price), or None when unknown."""
+    if l.price and l.size_m2:
+        return round(l.price / l.size_m2)
+    return None
 
 
 def _current_mode() -> str:
@@ -224,6 +233,7 @@ def main(argv=None):
     if args.cmd == "search":
         out = run_search(max_pages=args.max_pages, download=not args.no_images)
         print(
+            f"mode: {out['mode']}  "
             f"new: {len(out['new_listings'])}  "
             f"projects: {len(out['projects'])}  "
             f"excluded: {len(out['excluded'])}  "

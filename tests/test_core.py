@@ -78,3 +78,12 @@ def test_state_uses_mode_for_fingerprints(tmp_path):
     )
     assert State(p, mode="buy").has_fingerprint(fingerprint_from(4, 3, 80, 480400, mode="buy"))
     assert not State(p, mode="rent").has_fingerprint(fingerprint_from(4, 3, 80, 480400, mode="buy"))
+
+
+from wohnung.cli import price_per_m2  # noqa: E402
+
+
+def test_price_per_m2():
+    assert price_per_m2(_buy(price=480000, size_m2=80)) == 6000
+    assert price_per_m2(_buy(size_m2=None)) is None
+    assert price_per_m2(_buy(price=None)) is None
