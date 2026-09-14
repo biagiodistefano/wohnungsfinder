@@ -57,7 +57,7 @@ def ids_from_text(text: str) -> dict[str, str]:
     return out
 
 
-def _records_from_last_run(path: Path) -> dict[str, dict]:
+def _records_from_last_run(path: Path, mode: str = "rent") -> dict[str, dict]:
     """Richer recovery from .last_run.json: ids plus fingerprint inputs (meta)."""
     recs: dict[str, dict] = {}
     if not path.exists():
@@ -77,19 +77,20 @@ def _records_from_last_run(path: Path) -> dict[str, dict]:
                 if item.get(k) is not None
             }
             fp = fingerprint_from(
-                meta.get("district"), meta.get("rooms"), meta.get("size_m2"), meta_price(meta)
+                meta.get("district"), meta.get("rooms"), meta.get("size_m2"), meta_price(meta),
+                mode=mode,
             )
             recs[lid] = {"url": item.get("url", ""), "meta": meta or None, "fingerprint": fp}
     return recs
 
 
-def reindex(root: Path) -> dict:
+def reindex(root: Path, mode: str = "rent") -> dict:
     """Rebuild seen.json from every reports/*.md and the latest .last_run.json.
 
     Returns {"added": n, "scanned": n_ids, "total": len(state)}.
     """
     reports = root / "reports"
-    state = State(root / "state" / "seen.json")
+    state = State(root / "state" / "seen.json", mode=mode)
 
     # Collect candidate ids. Start with URL-only ids from all markdown reports, then
     # overlay the richer records (with meta/fingerprint) from .last_run.json.
@@ -97,7 +98,7 @@ def reindex(root: Path) -> dict:
     for md in sorted(reports.glob("*.md")):
         for lid, url in ids_from_text(md.read_text(encoding="utf-8")).items():
             found.setdefault(lid, {"url": url, "meta": None, "fingerprint": None})
-    for lid, rec in _records_from_last_run(reports / ".last_run.json").items():
+    for lid, rec in _records_from_last_run(reports / ".last_run.json", mode=mode).items():
         found[lid] = rec  # richer; overrides the url-only entry
 
     added = 0

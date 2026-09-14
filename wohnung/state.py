@@ -19,8 +19,9 @@ class State:
     listing look new again — which is exactly the failure we guard against here.
     """
 
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, mode: str = "rent"):
         self.path = Path(path)
+        self.mode = mode  # search mode: sets the price rounding of the dedup fingerprint
         self.bak_path = self.path.with_name(self.path.name + ".bak")
         self._data: dict[str, dict] = {}
         if self.path.exists():
@@ -67,7 +68,8 @@ class State:
                 m = v.get("meta")
                 if m:
                     fp = fingerprint_from(
-                        m.get("district"), m.get("rooms"), m.get("size_m2"), meta_price(m)
+                        m.get("district"), m.get("rooms"), m.get("size_m2"), meta_price(m),
+                        mode=self.mode,
                     )
             if fp:
                 fps.add(fp)

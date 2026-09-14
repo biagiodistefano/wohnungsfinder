@@ -41,3 +41,40 @@ def test_ubahn_nearest():
     assert 600 < haversine_m(48.2007, 16.3690, 48.2083, 16.3725) < 1300
     name, dist = nearest_ubahn(48.2083, 16.3725)  # near Stephansplatz
     assert name and dist >= 0
+
+
+from wohnung.dedup import fingerprint_from  # noqa: E402
+
+BUY = Criteria(450000, 500000, 70, 3, set(range(1, 10)), False, True, mode="buy", min_floor=3)
+
+
+def _buy(**kw):
+    d = dict(district=4, price=480000, size_m2=80, rooms=3, has_outdoor=True, floor_number=4)
+    d.update(kw)
+    return Listing(id="b", source="s", url="u", **d)
+
+
+def test_hard_filter_buy_price_cap_and_floor():
+    assert hard_filter(_buy(), BUY)[0]
+    assert hard_filter(_buy(price=500000), BUY)[0]  # at cap: keep
+    assert not hard_filter(_buy(price=500001), BUY)[0]
+    assert not hard_filter(_buy(floor_number=2), BUY)[0]  # explicitly lower: drop
+    assert hard_filter(_buy(floor_number=None, floor="DG"), BUY)[0]  # unknown/DG: keep
+    assert hard_filter(_buy(floor_number=0, price=1200), C)[0]  # min_floor=0 -> no floor filter
+    assert hard_filter(_buy(size_m2=None), BUY)[0]  # project without size: keep
+
+
+def test_fingerprint_rounding_per_mode():
+    assert fingerprint_from(4, 3, 80, 479500, mode="buy") == fingerprint_from(4, 3, 80, 480400, mode="buy")
+    assert fingerprint_from(4, 3, 80, 479500, mode="buy") != fingerprint_from(4, 3, 80, 481000, mode="buy")
+    assert fingerprint_from(7, 3, 70, 1198) == fingerprint_from(7, 3, 70, 1202)  # rent default: 10
+    assert fingerprint_from(7, 3, 70, 1198) != fingerprint_from(7, 3, 70, 1215)
+
+
+def test_state_uses_mode_for_fingerprints(tmp_path):
+    p = tmp_path / "seen.json"
+    State(p, mode="buy").record(
+        "a", source="s", url="u", meta={"district": 4, "rooms": 3, "size_m2": 80, "price": 479500}
+    )
+    assert State(p, mode="buy").has_fingerprint(fingerprint_from(4, 3, 80, 480400, mode="buy"))
+    assert not State(p, mode="rent").has_fingerprint(fingerprint_from(4, 3, 80, 480400, mode="buy"))

@@ -42,7 +42,7 @@ def build_sources(fetcher: Fetcher) -> list:
 
 def run_search(root: Path = ROOT, max_pages: int = 3, download: bool = True) -> dict:
     c = load_criteria()
-    state = State(root / "state" / "seen.json")
+    state = State(root / "state" / "seen.json", mode=c.mode)
     known_before = state.count_loaded
     state_warning = None
     if state.was_wiped():
@@ -89,7 +89,7 @@ def run_search(root: Path = ROOT, max_pages: int = 3, download: bool = True) -> 
 
             # Cross-source / cross-run dedup: the same flat cross-posted to several
             # portals collapses to one. No fingerprint (missing fields) => never merged.
-            fp = fingerprint(l)
+            fp = fingerprint(l, mode=c.mode)
             if fp and (state.has_fingerprint(fp) or fp in seen_fps):
                 duplicates.append({"id": l.id, "url": l.url, "fingerprint": fp})
                 state.record(
@@ -134,6 +134,14 @@ def run_search(root: Path = ROOT, max_pages: int = 3, download: bool = True) -> 
         json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     return out
+
+
+def _current_mode() -> str:
+    """Search mode from criteria.toml, or "rent" when there is no profile yet."""
+    try:
+        return load_criteria().mode
+    except SystemExit:
+        return "rent"
 
 
 def make_pdf(md_path, out_path=None) -> Path:
@@ -220,12 +228,12 @@ def main(argv=None):
         for e in out["source_errors"]:
             print(f"  ! {e}")
     elif args.cmd == "mark":
-        State(ROOT / "state" / "seen.json").mark(args.id, args.status)
+        State(ROOT / "state" / "seen.json", mode=_current_mode()).mark(args.id, args.status)
         print(f"{args.id} -> {args.status}")
     elif args.cmd == "reindex":
         from wohnung.recover import reindex
 
-        r = reindex(ROOT)
+        r = reindex(ROOT, mode=_current_mode())
         print(f"reindexed: added {r['added']} ids from {r['scanned']} found "
               f"(state now {r['total']})")
 
