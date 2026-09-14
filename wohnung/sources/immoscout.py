@@ -16,7 +16,7 @@ from wohnung.models import Listing
 
 _STATE_RE = re.compile(r"window\.__INITIAL_STATE__\s*=\s*")
 _UNDEF_RE = re.compile(r"\bundefined\b")
-ELEVATOR_KW = re.compile(r"\b(aufzug|lift|personenaufzug)\b", re.I)
+ELEVATOR_KW = re.compile(r"\b(aufzug|lift|personenaufzug|fahrstuhl)\b", re.I)
 OUTDOOR_KW = re.compile(r"\b(balkon|terrasse|loggia|garten|freifläche|eigengarten)\b", re.I)
 
 

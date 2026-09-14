@@ -14,7 +14,7 @@ SEARCH_URLS = {
     "buy": "https://www.immowelt.at/liste/wien/wohnungen/kaufen",
 }
 _IMG_RE = re.compile(r"https://cdnihddipa\.cloudimg\.io/[^\s\"'\\)]+", re.I)
-_ELEV_RE = re.compile(r"\b(aufzug|lift|personenaufzug)\b", re.I)
+_ELEV_RE = re.compile(r"\b(aufzug|lift|personenaufzug|fahrstuhl)\b", re.I)
 _OUT_RE = re.compile(r"\b(balkon|terrasse|loggia|garten|eigengarten|freifläche)\b", re.I)
 
 

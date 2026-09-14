@@ -63,7 +63,7 @@ class DerStandardSource:
                 listing.postcode = int(pc.group(1))
                 listing.district = int(pc.group(1)[1:3])
         # elevator: detail text only (cards don't carry it); keep unknown if absent
-        if re.search(r"\b(aufzug|lift|personenaufzug)\b", text, re.I):
+        if re.search(r"\b(aufzug|lift|personenaufzug|fahrstuhl)\b", text, re.I):
             listing.has_elevator = True
         listing.available_from = sniff_available(text) or listing.available_from
         if not listing.floor:
