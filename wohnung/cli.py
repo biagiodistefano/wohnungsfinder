@@ -67,6 +67,15 @@ def run_search(root: Path = ROOT, max_pages: int = 3, download: bool = True) -> 
         except Exception as e:  # a source failing must not abort the whole run
             source_errors.append({"source": src.name, "error": f"{type(e).__name__}: {e}"})
             continue
+        if not found:
+            # A portal never has zero listings for Vienna: this is a bot-challenge page
+            # served with HTTP 200, a swallowed 403, or a markup change. Surface it so
+            # the report (and the unattended log) shows the source went dark.
+            source_errors.append({
+                "source": src.name,
+                "error": "0 listings returned (bot-block page, 403, or markup change?)",
+            })
+            continue
 
         for l in found:
             if not state.is_new(l.id):

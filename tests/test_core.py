@@ -87,3 +87,23 @@ def test_price_per_m2():
     assert price_per_m2(_buy(price=480000, size_m2=80)) == 6000
     assert price_per_m2(_buy(size_m2=None)) is None
     assert price_per_m2(_buy(price=None)) is None
+
+
+def test_run_search_flags_sources_that_return_nothing(tmp_path, monkeypatch):
+    import wohnung.cli as cli
+
+    class Silent:
+        name = "silent"
+
+        def search(self, max_pages=3):
+            return []
+
+        def enrich(self, l):
+            return l
+
+    monkeypatch.setattr(cli, "build_sources", lambda fetcher, mode="rent": [Silent()])
+    monkeypatch.setattr(cli, "load_criteria", lambda: C)
+    out = cli.run_search(root=tmp_path, max_pages=1, download=False)
+    assert out["new_listings"] == []
+    assert [e["source"] for e in out["source_errors"]] == ["silent"]
+    assert "0 listings" in out["source_errors"][0]["error"]
